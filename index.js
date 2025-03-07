@@ -4,6 +4,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { default: axios } = require("axios");
 const port = process.env.PORT || 5000;
@@ -284,42 +285,108 @@ async function run() {
       }
     }); 
 
-
-    app.post('/success-payment', async (req, res) => {
-        try {
-            const paymentSuccess = req.body;
-    
-            // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
-            const response = await axios.get(
-                `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
-            );
-    
-            const data = response?.data;
-    
-            if (data?.status !== "VALID") {
-                return res.status(400).send({ message: "Invalid Payment" });
-            }
-    
-            // Payment Update করুন
-            const updatePayment = await paymentCollection.updateOne(
-                { transactionId: paymentSuccess.tran_id },
-                { $set: { status: "SUCCESS" } }
-            );
-    
-            console.log("Updated Payment:", updatePayment);
-            res.send({ message: "Payment updated successfully", updatePayment });
-    
-        } catch (error) {
-            console.error("Error in success-payment:", error);
-            res.status(500).send({ error: "Internal Server Error" });
-        }
-    });
-    
-
+  //   app.post('/success-payment', async (req, res) => {
+  //     try {
+  //         const paymentSuccess = req.body;
+  
+  //         // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
+  //         const response = await axios.get(
+  //             `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
+  //         );
+  
+  //         const data = response?.data;
+  
+  //         if (data?.status !== "VALID") {
+  //             return res.status(400).send({ message: "Invalid Payment" });
+  //         }
+  
+  //         // Payment Update করুন
+  //         const updatePayment = await paymentCollection.updateOne(
+  //             { transactionId: paymentSuccess.tran_id },
+  //             { $set: { status: "SUCCESS" } }
+  //         ); 
+          
+  //         const payment = await paymentCollection.findOne({ transactionId: paymentSuccess.tran_id });
+  
+  //         // Check if payment exists and has a cardId
+  //         if (!payment || !payment.cardId) {
+  //             return res.status(400).send({ error: "No cardId found in payment" });
+  //         }
+  
+  //         const cardId = payment.cardId; // Extract cardId
+  
+  //         const query = {
+  //           "payment.cardId": new ObjectId(cardId)
+  //         };
+  
+  //         const deleteResult = await bookingCollection.deleteMany(query);
+  //         console.log("deleteResult", deleteResult);
+  
+  //         res.redirect('http://localhost:5173/success');
+           
+  //         console.log("Updated Payment:", updatePayment);
+  //         res.send({ message: "Payment updated successfully", updatePayment });
+  
+  //     } catch (error) {
+  //         console.error("Error in success-payment:", error);
+  //         res.status(500).send({ error: "Internal Server Error" });
+  //     }
+  // });
+  
 
 
 
     // whislist reletive api
+  
+    app.post('/success-payment', async (req, res) => {
+      try {
+          const paymentSuccess = req.body;
+  
+          // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
+          const response = await axios.get(
+              `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
+          );
+  
+          const data = response?.data;
+  
+          if (data?.status !== "VALID") {
+              return res.status(400).send({ message: "Invalid Payment" });
+          }
+  
+          // Payment Update করুন
+          const updatePayment = await paymentCollection.updateOne(
+              { transactionId: paymentSuccess.tran_id },
+              { $set: { status: "SUCCESS" } }
+          ); 
+          
+          const payment = await paymentCollection.findOne({ transactionId: paymentSuccess.tran_id });
+  
+          if (!payment || !payment.cardId) {
+              return res.status(400).send({ error: "No cardId found in payment" });
+          }
+  
+          const cardId = payment.cardId; // Extract cardId
+          
+          
+  
+          const query = { cardId: new ObjectId(cardId) };
+          console.log("the id is a ", query);
+          
+  
+          const deleteResult = await bookingCollection.deleteMany(query);
+          console.log("deleteResult", deleteResult);
+  
+          // Redirect OR Send Response (choose one)
+          return res.redirect('http://localhost:5173/success'); 
+          // return res.send({ message: "Payment updated successfully", updatePayment });
+  
+      } catch (error) {
+          console.error("Error in success-payment:", error);
+          res.status(500).send({ error: "Internal Server Error" });
+      }
+  });
+  
+   
 
     app.get("/wishlist", async (req, res) => {
       const result = await wishlistCollection.find().toArray();
