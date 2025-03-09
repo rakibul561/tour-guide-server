@@ -217,6 +217,7 @@ async function run() {
       console.log(result);
     });
 
+
     app.get("/booking", async (req, res) => {
       const result = await bookingCollection.find().toArray();
       res.send(result);
@@ -285,59 +286,7 @@ async function run() {
       }
     }); 
 
-  //   app.post('/success-payment', async (req, res) => {
-  //     try {
-  //         const paymentSuccess = req.body;
-  
-  //         // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
-  //         const response = await axios.get(
-  //             `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
-  //         );
-  
-  //         const data = response?.data;
-  
-  //         if (data?.status !== "VALID") {
-  //             return res.status(400).send({ message: "Invalid Payment" });
-  //         }
-  
-  //         // Payment Update করুন
-  //         const updatePayment = await paymentCollection.updateOne(
-  //             { transactionId: paymentSuccess.tran_id },
-  //             { $set: { status: "SUCCESS" } }
-  //         ); 
-          
-  //         const payment = await paymentCollection.findOne({ transactionId: paymentSuccess.tran_id });
-  
-  //         // Check if payment exists and has a cardId
-  //         if (!payment || !payment.cardId) {
-  //             return res.status(400).send({ error: "No cardId found in payment" });
-  //         }
-  
-  //         const cardId = payment.cardId; // Extract cardId
-  
-  //         const query = {
-  //           "payment.cardId": new ObjectId(cardId)
-  //         };
-  
-  //         const deleteResult = await bookingCollection.deleteMany(query);
-  //         console.log("deleteResult", deleteResult);
-  
-  //         res.redirect('http://localhost:5173/success');
-           
-  //         console.log("Updated Payment:", updatePayment);
-  //         res.send({ message: "Payment updated successfully", updatePayment });
-  
-  //     } catch (error) {
-  //         console.error("Error in success-payment:", error);
-  //         res.status(500).send({ error: "Internal Server Error" });
-  //     }
-  // });
-  
-
-
-
-    // whislist reletive api
-  
+ 
     app.post('/success-payment', async (req, res) => {
       try {
           const paymentSuccess = req.body;
@@ -384,7 +333,40 @@ async function run() {
           console.error("Error in success-payment:", error);
           res.status(500).send({ error: "Internal Server Error" });
       }
-  });
+  }); 
+
+
+
+    // get email based  payment 
+
+    
+    app.get("/payment/:email", async (req, res) => {
+      const email = req.params.email;
+      if (email) {
+        query = { email: email };
+      }
+      console.log(email);
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+      console.log(result);
+    });
+      
+
+
+    // get all payment 
+
+    app.get('/payment', async (req, res) =>{
+      const result = await paymentCollection.find().toArray();
+      res.send (result)
+    })
+ 
+
+    //  get all story 
+
+    app.get('/story', async (req, res)=>{
+      const result = await storysCollection.find().toArray();
+      res.send(result)
+    })
   
    
 
@@ -408,6 +390,7 @@ async function run() {
       const result = await wishlistCollection.find(query).toArray();
       res.send(result);
     });
+
 
     //   wishlist details api
     app.get("/heart/:id", async (req, res) => {
