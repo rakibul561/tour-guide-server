@@ -363,7 +363,7 @@ async function run() {
 
     //  get all story 
 
-    app.get('/story', async (req, res)=>{
+    app.get('/storys', async (req, res)=>{
       const result = await storysCollection.find().toArray();
       res.send(result)
     })
