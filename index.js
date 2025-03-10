@@ -13,7 +13,8 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
-
+const STORE_ID =process.env.STORE_ID;
+const STORE_PASS =process.env.STORE_PASS;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fmdvppd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -231,19 +232,122 @@ async function run() {
 
     //    payment gatway
 
-    app.post("/create-ssl-payment", async (req, res) => {
-      const payment = req.body;
+  //   app.post("/create-ssl-payment", async (req, res) => {
+  //     const payment = req.body;
 
-      const trxid = new ObjectId().toString();
-      payment.transactionId = trxid;
+  //     const trxid = new ObjectId().toString();
+  //     payment.transactionId = trxid;
+  //     const inistite = {
+  //       store_id: STORE_ID,
+  //       store_passwd: STORE_PASS,
+  //       total_amount: payment.price,
+  //       currency: "BDT",
+  //       tran_id: trxid, // use unique tran_id for each api call
+  //       success_url: "http://localhost:5000/success",
+  //       fail_url: "http://localhost:5173/fail",
+  //       cancel_url: "http://localhost:5173/cancel",
+  //       ipn_url: "http://localhost:5000/ipn-success-payment",
+  //       shipping_method: "Courier",
+  //       product_name: "Computer.",
+  //       product_category: "Electronic",
+  //       product_profile: "general",
+  //       cus_name: "Customer Name",
+  //       cus_email: `${payment.email}`,
+  //       cus_add1: "Dhaka",
+  //       cus_add2: "Dhaka",
+  //       cus_city: "Dhaka",
+  //       cus_state: "Dhaka",
+  //       cus_postcode: "1000",
+  //       cus_country: "Bangladesh",
+  //       cus_phone: "01711111111",
+  //       cus_fax: "01711111111",
+  //       ship_name: "Customer Name",
+  //       ship_add1: "Dhaka",
+  //       ship_add2: "Dhaka",
+  //       ship_city: "Dhaka",
+  //       ship_state: "Dhaka",
+  //       ship_postcode: 1000,
+  //       ship_country: "Bangladesh",
+  //     };
 
-      const inistite = {
-        store_id: "touri67c9a943d0cac",
-        store_passwd: "touri67c9a943d0cac@ssl",
+  //     const iniResponse = await axios({
+  //       url: "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
+  //       method: "POST",
+  //       data: inistite,
+  //       headers: {
+  //         "Content-Type": "application/x-www-form-urlencoded",
+  //       },
+  //     });
+
+  //     const saveData = await paymentCollection.insertOne(payment);
+  //     if (saveData) {
+  //       const gatewayUrl = iniResponse?.data?.GatewayPageURL;
+  //       res.send({ gatewayUrl });
+  //     }
+  //   }); 
+
+ 
+  //   app.post('/success-payment', async (req, res) => {
+  //     try {
+  //         const paymentSuccess = req.body;
+  
+  //         const response = await axios.get(
+  //             `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
+  //         );
+  
+  //         const data = response?.data;
+  
+  //         if (data?.status !== "VALID") {
+  //             return res.status(400).send({ message: "Invalid Payment" });
+  //         }
+  
+  //         // Payment Update করুন
+  //         const updatePayment = await paymentCollection.updateOne(
+  //             { transactionId: paymentSuccess.tran_id },
+  //             { $set: { status: "SUCCESS" } }
+  //         ); 
+          
+  //         const payment = await paymentCollection.findOne({ transactionId: paymentSuccess.tran_id });
+  
+  //         if (!payment || !payment.cardId) {
+  //             return res.status(400).send({ error: "No cardId found in payment" });
+  //         }
+  
+  //         const cardId = payment.cardId; // Extract cardId
+          
+          
+  
+  //         const query = { cardId: new ObjectId(cardId) };
+  //         console.log("the id is a ", query);
+          
+  
+  //         const deleteResult = await bookingCollection.deleteMany(query);
+  //         console.log("deleteResult", deleteResult);
+  
+  //         // Redirect OR Send Response (choose one)
+  //         return res.redirect('http://localhost:5173/success'); 
+  //         // return res.send({ message: "Payment updated successfully", updatePayment });
+  
+  //     } catch (error) {
+  //         console.error("Error in success-payment:", error);
+  //         res.status(500).send({ error: "Internal Server Error" });
+  //     }
+  // }); 
+
+
+
+  app.post("/create-ssl-payment", async (req, res) => {
+    const payment = req.body;
+
+    const trxid = new ObjectId().toString();
+    payment.transactionId = trxid;
+    const inistite = {
+        store_id: STORE_ID,
+        store_passwd: STORE_PASS,
         total_amount: payment.price,
         currency: "BDT",
         tran_id: trxid, // use unique tran_id for each api call
-        success_url: "http://localhost:5000/success-payment",
+        success_url: "http://localhost:5173/success-payment",
         fail_url: "http://localhost:5173/fail",
         cancel_url: "http://localhost:5173/cancel",
         ipn_url: "http://localhost:5000/ipn-success-payment",
@@ -268,72 +372,64 @@ async function run() {
         ship_state: "Dhaka",
         ship_postcode: 1000,
         ship_country: "Bangladesh",
-      };
+    };
 
-      const iniResponse = await axios({
+    const iniResponse = await axios({
         url: "https://sandbox.sslcommerz.com/gwprocess/v4/api.php",
         method: "POST",
         data: inistite,
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded",
         },
-      });
+    });
 
-      const saveData = await paymentCollection.insertOne(payment);
-      if (saveData) {
+    const saveData = await paymentCollection.insertOne(payment);
+    console.log("this payment us", payment);
+    
+    if (saveData) {
         const gatewayUrl = iniResponse?.data?.GatewayPageURL;
         res.send({ gatewayUrl });
-      }
-    }); 
+    }
+});
 
- 
-    app.post('/success-payment', async (req, res) => {
-      try {
-          const paymentSuccess = req.body;
+app.post('/success-payment', async (req, res) => {
+    try {
+        const paymentSuccess = req.body;
+
+        // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
+        const response = await axios.get(
+            `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
+        );
+
+        const data = response?.data;
+
+        if (data?.status !== "VALID") {
+            return res.status(400).send({ message: "Invalid Payment" });
+        }
+
+
+        // Payment Update করুন
+        const updatePayment = await paymentCollection.updateOne(
+            { transactionId: paymentSuccess.tran_id },
+            { $set: { status: "SUCCESS" } }
+        ); 
+
+        console.log("this status is on fire ",data.status);
+        
+        
+
   
-          // SSLCommerz থেকে পেমেন্ট ভেরিফাই করুন
-          const response = await axios.get(
-              `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${paymentSuccess.val_id}&store_id=touri67c9a943d0cac&store_passwd=touri67c9a943d0cac@ssl&format=json`
-          );
-  
-          const data = response?.data;
-  
-          if (data?.status !== "VALID") {
-              return res.status(400).send({ message: "Invalid Payment" });
-          }
-  
-          // Payment Update করুন
-          const updatePayment = await paymentCollection.updateOne(
-              { transactionId: paymentSuccess.tran_id },
-              { $set: { status: "SUCCESS" } }
-          ); 
-          
-          const payment = await paymentCollection.findOne({ transactionId: paymentSuccess.tran_id });
-  
-          if (!payment || !payment.cardId) {
-              return res.status(400).send({ error: "No cardId found in payment" });
-          }
-  
-          const cardId = payment.cardId; // Extract cardId
-          
-          
-  
-          const query = { cardId: new ObjectId(cardId) };
-          console.log("the id is a ", query);
-          
-  
-          const deleteResult = await bookingCollection.deleteMany(query);
-          console.log("deleteResult", deleteResult);
-  
-          // Redirect OR Send Response (choose one)
-          return res.redirect('http://localhost:5173/success'); 
-          // return res.send({ message: "Payment updated successfully", updatePayment });
-  
-      } catch (error) {
-          console.error("Error in success-payment:", error);
-          res.status(500).send({ error: "Internal Server Error" });
-      }
-  }); 
+        console.log("updated payment", updatePayment);
+        
+        return res.send({ message: "Payment updated successfully", updatePayment });
+        
+
+    } catch (error) {
+        console.error("Error in success-payment:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+    }
+});
+
 
 
 
